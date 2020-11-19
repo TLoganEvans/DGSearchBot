@@ -54,7 +54,7 @@ namespace DGSearchBot
 
             Commands = Client.UseCommandsNext(commandsConfig);
 
-            Commands.RegisterCommands<FunCommands>();
+            Commands.RegisterCommands<PrimaryCommands>();
 
             await Client.ConnectAsync();
 
