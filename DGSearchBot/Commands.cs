@@ -1,14 +1,17 @@
-﻿using DSharpPlus.CommandsNext;
+﻿using DGSearchBot;
+using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Interactivity;
 using Newtonsoft.Json;
 using System;
+using System.IO;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 
-namespace DGSearchBot.Commands
+namespace DGSearchBot
 {
-    public class PrimaryCommands : BaseCommandModule
+    public class Commands : BaseCommandModule
     {
         [Command("ping")]
         [Description("Returns Pong")]
@@ -40,12 +43,20 @@ namespace DGSearchBot.Commands
         [Description("Returns the weather for a specified area/zip code within the USA.")]
         public async Task Weather(CommandContext ctx, string zip)
         {
+            var json = string.Empty;
+            using (var fs = File.OpenRead("config.json"))
+            using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
+                json = await sr.ReadToEndAsync().ConfigureAwait(false);
+
+            var configJson = JsonConvert.DeserializeObject<ConfigJSON>(json);
+            var weatherApiToken = configJson.Weatherapi;
+
             using (var client = new HttpClient())
             {
                 try
                 {
                     client.BaseAddress = new Uri("http://api.openweathermap.org");
-                    var response = await client.GetAsync($"data/2.5/weather?zip={zip}&units=imperial&appid=68ef6c60c72a807cc19078846a8fbacc");
+                    var response = await client.GetAsync($"data/2.5/weather?zip={zip}&units=imperial&appid={weatherApiToken}");
                     response.EnsureSuccessStatusCode();
 
                     var stringResult = await response.Content.ReadAsStringAsync();
